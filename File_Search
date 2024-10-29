@@ -1,0 +1,41 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class KeywordSearch {
+    public static void main(String[] args) {
+        String filePath = "path/to/your/file.txt"; // Specify the file path
+        String keyword = "yourKeyword"; // Specify the keyword to search for
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            int lineNumber = 0;
+            boolean found = false;
+
+            while ((line = br.readLine()) != null) {
+                lineNumber++;
+                if (line.contains(keyword)) {
+                    System.out.println("Keyword found at line " + lineNumber + ": " + line);
+                    found = true;
+
+                    // Output the next five lines
+                    for (int i = 0; i < 5; i++) {
+                        if ((line = br.readLine()) != null) {
+                            System.out.println("Next line " + (lineNumber + i + 1) + ": " + line);
+                        } else {
+                            break; // Break if there are less than 5 lines remaining
+                        }
+                    }
+                    break; // Break after processing the next five lines
+                }
+            }
+
+            if (!found) {
+                System.out.println("Keyword not found in the file.");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
