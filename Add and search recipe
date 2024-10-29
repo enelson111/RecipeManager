@@ -1,0 +1,150 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+class Recipe {
+    private String name;
+    private List<String> ingredients;
+    private String instructions;
+    private String category;
+
+    public Recipe(String name, List<String> ingredients, String instructions, String category) {
+        this.name = name;
+        this.ingredients = ingredients;
+        this.instructions = instructions;
+        this.category = category;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public List<String> getIngredients() {
+        return ingredients;
+    }
+
+    public String getInstructions() {
+        return instructions;
+    }
+
+    @Override
+    public String toString() {
+        return "Recipe: " + name + "\nCategory: " + category + "\nIngredients: " + ingredients + "\nInstructions: " + instructions;
+    }
+}
+
+class RecipeManager {
+    private List<Recipe> recipes;
+
+    public RecipeManager() {
+        recipes = new ArrayList<>();
+    }
+
+    public void addRecipe(Recipe recipe) {
+        recipes.add(recipe);
+        System.out.println("Recipe '" + recipe.getName() + "' added successfully!");
+    }
+
+    public void listRecipes() {
+        if (recipes.isEmpty()) {
+            System.out.println("No recipes available.");
+            return;
+        }
+        for (int i = 0; i < recipes.size(); i++) {
+            System.out.println((i + 1) + ". " + recipes.get(i).getName() + " (" + recipes.get(i).getCategory() + ")");
+        }
+    }
+
+    public void viewRecipe(int index) {
+        if (index < 0 || index >= recipes.size()) {
+            System.out.println("Invalid recipe number.");
+            return;
+        }
+        System.out.println(recipes.get(index).toString());
+    }
+
+    public void searchRecipe(String name) {
+        boolean found = false;
+        for (Recipe recipe : recipes) {
+            if (recipe.getName().equalsIgnoreCase(name)) {
+                System.out.println(recipe);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            System.out.println("Recipe not found.");
+        }
+    }
+}
+
+public class RecipeApp {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        RecipeManager recipeManager = new RecipeManager();
+
+        while (true) {
+            System.out.println("\nRecipe Manager");
+            System.out.println("1. Add Recipe");
+            System.out.println("2. List Recipes");
+            System.out.println("3. View Recipe");
+            System.out.println("4. Search Recipe by Name");
+            System.out.println("5. Exit");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();  // Consume newline
+
+            switch (choice) {
+                case 1:
+                    // Input for a new recipe
+                    System.out.print("Enter recipe name: ");
+                    String name = scanner.nextLine();
+
+                    System.out.print("Enter category (breakfast/lunch/dinner/dessert): ");
+                    String category = scanner.nextLine();
+
+                    System.out.print("Enter ingredients (comma separated): ");
+                    String[] ingredientsArray = scanner.nextLine().split(",");
+                    List<String> ingredients = new ArrayList<>();
+                    for (String ingredient : ingredientsArray) {
+                        ingredients.add(ingredient.trim());
+                    }
+
+                    System.out.print("Enter instructions: ");
+                    String instructions = scanner.nextLine();
+
+                    Recipe recipe = new Recipe(name, ingredients, instructions, category);
+                    recipeManager.addRecipe(recipe);
+                    break;
+
+                case 2:
+                    recipeManager.listRecipes();
+                    break;
+
+                case 3:
+                    System.out.print("Enter recipe number to view: ");
+                    int recipeNumber = scanner.nextInt();
+                    recipeManager.viewRecipe(recipeNumber - 1); // Adjust for zero-based index
+                    break;
+
+                case 4:
+                    System.out.print("Enter recipe name to search: ");
+                    String searchName = scanner.nextLine();
+                    recipeManager.searchRecipe(searchName);
+                    break;
+
+                case 5:
+                    System.out.println("Exiting...");
+                    scanner.close();
+                    return;
+
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+}
