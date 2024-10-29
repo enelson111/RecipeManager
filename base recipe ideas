@@ -1,0 +1,154 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+class Recipe {
+    private String name;
+    private List<String> ingredients;
+    private List<String> instructions;
+    private String cookingTime;
+
+    public Recipe(String name, List<String> ingredients, List<String> instructions, String cookingTime) {
+        this.name = name;
+        this.ingredients = ingredients;
+        this.instructions = instructions;
+        this.cookingTime = cookingTime;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<String> getIngredients() {
+        return ingredients;
+    }
+
+    public List<String> getInstructions() {
+        return instructions;
+    }
+
+    public String getCookingTime() {
+        return cookingTime;
+    }
+
+    @Override
+    public String toString() {
+        return "Recipe{" +
+                "name='" + name + '\'' +
+                ", ingredients=" + ingredients +
+                ", instructions=" + instructions +
+                ", cookingTime='" + cookingTime + '\'' +
+                '}';
+    }
+}
+
+public class RecipeManager {
+    public static void main(String[] args) {
+        List<Recipe> defaultRecipes = Arrays.asList(
+            new Recipe(
+                "Spaghetti",
+                Arrays.asList(
+                    "400g spaghetti",
+                    "4 cloves garlic, sliced",
+                    "1/2 cup olive oil",
+                    "1 tsp red pepper flakes",
+                    "Salt, to taste",
+                    "Fresh parsley, chopped (for garnish)",
+                    "Grated Parmesan (optional)"
+                ),
+                Arrays.asList(
+                    "Cook spaghetti according to package instructions in salted water.",
+                    "In a pan, heat olive oil over medium heat and add garlic. Sauté until golden.",
+                    "Add red pepper flakes and cook for another minute.",
+                    "Drain pasta and toss with the garlic oil. Season with salt.",
+                    "Garnish with parsley and Parmesan if desired."
+                ),
+                "20 minutes"
+            ),
+            new Recipe(
+                "Chicken Stir-Fry",
+                Arrays.asList(
+                    "500g chicken breast, sliced",
+                    "2 cups mixed vegetables (bell peppers, broccoli, carrots)",
+                    "3 tbsp soy sauce",
+                    "2 tbsp sesame oil",
+                    "2 cloves garlic, minced",
+                    "Cooked rice, for serving"
+                ),
+                Arrays.asList(
+                    "Heat sesame oil in a pan over medium-high heat. Add garlic and sauté.",
+                    "Add chicken and cook until browned.",
+                    "Add mixed vegetables and stir-fry for 5-7 minutes.",
+                    "Pour in soy sauce and cook for another 2 minutes.",
+                    "Serve over cooked rice."
+                ),
+                "30 minutes"
+            ),
+            new Recipe(
+                "Vegetarian Chili",
+                Arrays.asList(
+                    "1 can (400g) kidney beans, drained",
+                    "1 can (400g) black beans, drained",
+                    "1 can (400g) diced tomatoes",
+                    "1 bell pepper, diced",
+                    "1 onion, chopped",
+                    "2 cloves garlic, minced",
+                    "2 tsp chili powder",
+                    "Salt and pepper, to taste"
+                ),
+                Arrays.asList(
+                    "In a pot, sauté onion and garlic until translucent.",
+                    "Add bell pepper and cook for another 3 minutes.",
+                    "Stir in beans, tomatoes, chili powder, salt, and pepper.",
+                    "Simmer for 20 minutes, stirring occasionally.",
+                    "Serve hot."
+                ),
+                "40 minutes"
+            ),
+            new Recipe(
+                "Banana Pancakes",
+                Arrays.asList(
+                    "1 cup all-purpose flour",
+                    "2 ripe bananas, mashed",
+                    "1 tbsp sugar",
+                    "1 tsp baking powder",
+                    "1/2 tsp baking soda",
+                    "1 cup milk",
+                    "1 egg",
+                    "Butter (for cooking)"
+                ),
+                Arrays.asList(
+                    "In a bowl, mix flour, sugar, baking powder, and baking soda.",
+                    "In another bowl, combine mashed bananas, milk, and egg.",
+                    "Mix wet and dry ingredients until just combined.",
+                    "Heat butter in a pan over medium heat. Pour batter for pancakes.",
+                    "Cook until bubbles form, then flip and cook until golden."
+                ),
+                "25 minutes"
+            ),
+            new Recipe(
+                "Salad",
+                Arrays.asList(
+                    "4 cups mixed greens",
+                    "1 cucumber, sliced",
+                    "1 cup cherry tomatoes, halved",
+                    "1/4 red onion, thinly sliced",
+                    "1/4 cup olive oil",
+                    "2 tbsp balsamic vinegar",
+                    "Salt and pepper, to taste"
+                ),
+                Arrays.asList(
+                    "In a large bowl, combine mixed greens, cucumber, tomatoes, and onion.",
+                    "In a small bowl, whisk together olive oil, balsamic vinegar, salt, and pepper.",
+                    "Drizzle dressing over the salad and toss gently."
+                ),
+                "10 minutes"
+            )
+        );
+
+        // Display the default recipes
+        for (Recipe recipe : defaultRecipes) {
+            System.out.println(recipe);
+        }
+    }
+}
