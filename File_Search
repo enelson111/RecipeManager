@@ -1,37 +1,40 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class KeywordSearch {
+public class KeywordRangeSearch {
     public static void main(String[] args) {
         String filePath = "path/to/your/file.txt"; // Specify the file path
-        String keyword = "yourKeyword"; // Specify the keyword to search for
+        String startKeyword = "Recipe: Macaroni"; // Specify the start keyword
+        String endKeyword = "End: Macaroni"; // Specify the end keyword
 
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
-            int lineNumber = 0;
-            boolean found = false;
+            boolean inRange = false;
+            List<String> linesBetweenKeywords = new ArrayList<>();
 
             while ((line = br.readLine()) != null) {
-                lineNumber++;
-                if (line.contains(keyword)) {
-                    System.out.println("Keyword found at line " + lineNumber + ": " + line);
-                    found = true;
-
-                    // Output the next five lines
-                    for (int i = 0; i < 5; i++) {
-                        if ((line = br.readLine()) != null) {
-                            System.out.println("Next line " + (lineNumber + i + 1) + ": " + line);
-                        } else {
-                            break; // Break if there are less than 5 lines remaining
-                        }
-                    }
-                    break; // Break after processing the next five lines
+                if (line.contains(startKeyword)) {
+                    inRange = true;
+                    linesBetweenKeywords.add(line);
+                } else if (line.contains(endKeyword)) {
+                    inRange = false;
+                    linesBetweenKeywords.add(line);
+                    break; // Stop after finding the end keyword
+                } else if (inRange) {
+                    linesBetweenKeywords.add(line);
                 }
             }
 
-            if (!found) {
-                System.out.println("Keyword not found in the file.");
+            if (linesBetweenKeywords.isEmpty()) {
+                System.out.println("No lines found between the keywords.");
+            } else {
+                System.out.println("Lines between the keywords:");
+                for (String outputLine : linesBetweenKeywords) {
+                    System.out.println(outputLine);
+                }
             }
 
         } catch (IOException e) {
