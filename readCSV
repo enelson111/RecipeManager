@@ -8,7 +8,7 @@ public class ReadCSV {
     public static void main(String[] args) {
         String filePath = "path/to/your/data.csv";
         String line = "";
-        String splitBy = ",";
+        String splitBy = "/";
 
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             while ((line = br.readLine()) != null) {
