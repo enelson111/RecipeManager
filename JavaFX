@@ -1,5 +1,5 @@
 package application;
-	
+
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 class Recipe {
     private String name;
@@ -45,6 +46,17 @@ class Recipe {
     public String toString() {
         return name + " (" + category + ")";
     }
+
+    // Check if the recipe contains a keyword in the name or ingredients
+    public boolean matchesKeyword(String keyword) {
+        return name.toLowerCase().contains(keyword.toLowerCase()) || ingredients.stream()
+                .anyMatch(ingredient -> ingredient.toLowerCase().contains(keyword.toLowerCase()));
+    }
+
+    // Check if the recipe matches the specified category
+    public boolean matchesCategory(String category) {
+        return category.isEmpty() || this.category.equalsIgnoreCase(category);
+    }
 }
 
 class RecipeManager {
@@ -62,10 +74,6 @@ class RecipeManager {
         return recipes;
     }
 
-    public Recipe getRecipe(int index) {
-        return recipes.get(index);
-    }
-
     public Recipe searchRecipe(String name) {
         for (Recipe recipe : recipes) {
             if (recipe.getName().equalsIgnoreCase(name)) {
@@ -73,6 +81,12 @@ class RecipeManager {
             }
         }
         return null;
+    }
+
+    public List<Recipe> searchRecipesByKeywordAndCategory(String keyword, String category) {
+        return recipes.stream()
+                .filter(recipe -> recipe.matchesKeyword(keyword) && recipe.matchesCategory(category))
+                .collect(Collectors.toList());
     }
 }
 
@@ -82,10 +96,14 @@ public class Main extends Application {
     private ListView<Recipe> recipeListView = new ListView<>(recipeList);
     private TextArea recipeDetailsArea = new TextArea();
     private TextField searchField = new TextField();
+    private ComboBox<String> categoryComboBox = new ComboBox<>();
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Recipe Manager");
+
+        // Add predefined recipes
+        addDefaultRecipes();
 
         // Create the layout containers
         VBox mainLayout = new VBox(10);
@@ -105,11 +123,16 @@ public class Main extends Application {
         recipeDetailsArea.setEditable(false);
         recipeDetailsArea.setPrefHeight(200);
 
-        // Search Field and Button
+        // Search Field and Category ComboBox
         searchBox.getChildren().addAll(new Label("Search: "), searchField);
+        
+        // Category ComboBox
+        categoryComboBox.setItems(FXCollections.observableArrayList("All", "Breakfast", "Lunch", "Dinner", "Dessert", "Snack"));
+        categoryComboBox.getSelectionModel().selectFirst(); // Default selection "All"
+        
         Button searchButton = new Button("Search");
         searchButton.setOnAction(e -> searchRecipe());
-        searchBox.getChildren().add(searchButton);
+        searchBox.getChildren().addAll(categoryComboBox, searchButton);
 
         // Input fields for new recipe
         TextField nameField = new TextField();
@@ -131,10 +154,31 @@ public class Main extends Application {
         listButton.setOnAction(e -> listRecipes());
 
         mainLayout.getChildren().addAll(searchBox, recipeListView, recipeDetailsArea, inputBox, listButton);
-        
+
         Scene scene = new Scene(mainLayout, 600, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    // Method to add default recipes
+    private void addDefaultRecipes() {
+        List<String> ingredients1 = List.of("Eggs", "Bread", "Butter", "Salt", "Pepper");
+        recipeManager.addRecipe(new Recipe("Scrambled Eggs", ingredients1, "1. Crack eggs into a bowl. 2. Beat eggs with a fork. 3. Cook in a hot buttered pan.", "Breakfast"));
+
+        List<String> ingredients2 = List.of("Pasta", "Tomato Sauce", "Olive Oil", "Garlic", "Basil");
+        recipeManager.addRecipe(new Recipe("Spaghetti Aglio e Olio", ingredients2, "1. Cook pasta. 2. Heat olive oil with garlic in a pan. 3. Toss pasta with oil and tomato sauce.", "Dinner"));
+
+        List<String> ingredients3 = List.of("Flour", "Sugar", "Eggs", "Butter", "Baking Powder", "Vanilla Extract");
+        recipeManager.addRecipe(new Recipe("Vanilla Cupcakes", ingredients3, "1. Preheat oven. 2. Mix ingredients. 3. Bake for 20 minutes.", "Dessert"));
+
+        List<String> ingredients4 = List.of("Chicken", "Lemon", "Thyme", "Garlic", "Olive Oil", "Salt", "Pepper");
+        recipeManager.addRecipe(new Recipe("Lemon Herb Chicken", ingredients4, "1. Marinate chicken. 2. Roast in oven with herbs.", "Dinner"));
+
+        List<String> ingredients5 = List.of("Avocado", "Lemon", "Cilantro", "Salt", "Pepper", "Chili Flakes");
+        recipeManager.addRecipe(new Recipe("Guacamole", ingredients5, "1. Mash avocado. 2. Add lemon, cilantro, salt, pepper, and chili flakes. Mix.", "Snack"));
+
+        // Add the recipes to the ListView
+        recipeList.addAll(recipeManager.getRecipes());
     }
 
     // Add recipe method
@@ -158,18 +202,18 @@ public class Main extends Application {
         recipeDetailsArea.setText(details);
     }
 
-    // Search recipe by name
+    // Search recipe by keyword and category
     private void searchRecipe() {
-        String name = searchField.getText();
-        if (name.isEmpty()) {
-            showAlert("Please enter a recipe name to search.");
-            return;
-        }
-        Recipe foundRecipe = recipeManager.searchRecipe(name);
-        if (foundRecipe != null) {
-            showRecipeDetails(foundRecipe);
+        String keyword = searchField.getText();
+        String category = categoryComboBox.getSelectionModel().getSelectedItem();
+
+        // If "All" is selected, we want to ignore the category filter
+        List<Recipe> searchResults = recipeManager.searchRecipesByKeywordAndCategory(keyword, category.equals("All") ? "" : category);
+        
+        if (searchResults.isEmpty()) {
+            showAlert("No recipes found for the search criteria.");
         } else {
-            showAlert("Recipe not found.");
+            recipeList.setAll(searchResults);
         }
     }
 
@@ -188,7 +232,6 @@ public class Main extends Application {
 
     // Clear input fields after adding a recipe
     private void clearInputFields() {
-        // Clear all input fields
         searchField.clear();
     }
 
@@ -197,3 +240,4 @@ public class Main extends Application {
         launch(args);
     }
 }
+
