@@ -1,0 +1,199 @@
+package application;
+	
+import javafx.application.Application;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.List;
+
+class Recipe {
+    private String name;
+    private List<String> ingredients;
+    private String instructions;
+    private String category;
+
+    public Recipe(String name, List<String> ingredients, String instructions, String category) {
+        this.name = name;
+        this.ingredients = ingredients;
+        this.instructions = instructions;
+        this.category = category;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public List<String> getIngredients() {
+        return ingredients;
+    }
+
+    public String getInstructions() {
+        return instructions;
+    }
+
+    @Override
+    public String toString() {
+        return name + " (" + category + ")";
+    }
+}
+
+class RecipeManager {
+    private List<Recipe> recipes;
+
+    public RecipeManager() {
+        recipes = new ArrayList<>();
+    }
+
+    public void addRecipe(Recipe recipe) {
+        recipes.add(recipe);
+    }
+
+    public List<Recipe> getRecipes() {
+        return recipes;
+    }
+
+    public Recipe getRecipe(int index) {
+        return recipes.get(index);
+    }
+
+    public Recipe searchRecipe(String name) {
+        for (Recipe recipe : recipes) {
+            if (recipe.getName().equalsIgnoreCase(name)) {
+                return recipe;
+            }
+        }
+        return null;
+    }
+}
+
+public class Main extends Application {
+    private RecipeManager recipeManager = new RecipeManager();
+    private ObservableList<Recipe> recipeList = FXCollections.observableArrayList();
+    private ListView<Recipe> recipeListView = new ListView<>(recipeList);
+    private TextArea recipeDetailsArea = new TextArea();
+    private TextField searchField = new TextField();
+
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Recipe Manager");
+
+        // Create the layout containers
+        VBox mainLayout = new VBox(10);
+        HBox searchBox = new HBox(10);
+        HBox inputBox = new HBox(10);
+        inputBox.setSpacing(10);
+
+        // Setup Recipe List View
+        recipeListView.setPrefHeight(200);
+        recipeListView.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends Recipe> observable, Recipe oldValue, Recipe newValue) -> {
+            if (newValue != null) {
+                showRecipeDetails(newValue);
+            }
+        });
+
+        // Setup TextArea for displaying recipe details
+        recipeDetailsArea.setEditable(false);
+        recipeDetailsArea.setPrefHeight(200);
+
+        // Search Field and Button
+        searchBox.getChildren().addAll(new Label("Search: "), searchField);
+        Button searchButton = new Button("Search");
+        searchButton.setOnAction(e -> searchRecipe());
+        searchBox.getChildren().add(searchButton);
+
+        // Input fields for new recipe
+        TextField nameField = new TextField();
+        nameField.setPromptText("Recipe Name");
+        TextField categoryField = new TextField();
+        categoryField.setPromptText("Category (e.g. Breakfast)");
+        TextField ingredientsField = new TextField();
+        ingredientsField.setPromptText("Ingredients (comma separated)");
+        TextArea instructionsArea = new TextArea();
+        instructionsArea.setPromptText("Instructions");
+
+        Button addButton = new Button("Add Recipe");
+        addButton.setOnAction(e -> addRecipe(nameField.getText(), categoryField.getText(), ingredientsField.getText(), instructionsArea.getText()));
+
+        inputBox.getChildren().addAll(nameField, categoryField, ingredientsField, instructionsArea, addButton);
+
+        // Button to list all recipes
+        Button listButton = new Button("List All Recipes");
+        listButton.setOnAction(e -> listRecipes());
+
+        mainLayout.getChildren().addAll(searchBox, recipeListView, recipeDetailsArea, inputBox, listButton);
+        
+        Scene scene = new Scene(mainLayout, 600, 600);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    // Add recipe method
+    private void addRecipe(String name, String category, String ingredientsText, String instructions) {
+        if (name.isEmpty() || category.isEmpty() || ingredientsText.isEmpty() || instructions.isEmpty()) {
+            showAlert("All fields must be filled out.");
+            return;
+        }
+
+        List<String> ingredients = List.of(ingredientsText.split(","));
+        Recipe newRecipe = new Recipe(name, ingredients, instructions, category);
+        recipeManager.addRecipe(newRecipe);
+        recipeList.add(newRecipe);
+        clearInputFields();
+        showAlert("Recipe added successfully!");
+    }
+
+    // Show recipe details in the TextArea
+    private void showRecipeDetails(Recipe recipe) {
+        String details = "Name: " + recipe.getName() + "\nCategory: " + recipe.getCategory() + "\nIngredients: " + String.join(", ", recipe.getIngredients()) + "\n\nInstructions: \n" + recipe.getInstructions();
+        recipeDetailsArea.setText(details);
+    }
+
+    // Search recipe by name
+    private void searchRecipe() {
+        String name = searchField.getText();
+        if (name.isEmpty()) {
+            showAlert("Please enter a recipe name to search.");
+            return;
+        }
+        Recipe foundRecipe = recipeManager.searchRecipe(name);
+        if (foundRecipe != null) {
+            showRecipeDetails(foundRecipe);
+        } else {
+            showAlert("Recipe not found.");
+        }
+    }
+
+    // List all recipes in the ListView
+    private void listRecipes() {
+        recipeList.clear();
+        recipeList.addAll(recipeManager.getRecipes());
+    }
+
+    // Show alert dialog
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // Clear input fields after adding a recipe
+    private void clearInputFields() {
+        // Clear all input fields
+        searchField.clear();
+    }
+
+    public static void main(String[] args) {
+        // Launch the JavaFX application
+        launch(args);
+    }
+}
