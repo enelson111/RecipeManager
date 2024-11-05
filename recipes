@@ -1,3 +1,3 @@
-number/ recipe/ ingredients/ Steps/
-1/      macaroni/  cheese, milk, noodle/  make noodle, pour cheese over noodle, bake for 20 min/
-2/      taco/      tortilla, meat, cheese / cook meat, put ingredients into tortilla
+number,, recipe,, ingredients,, Steps
+1,, macaroni,, cheese, milk, noodle,,  make noodle, pour cheese over noodle, bake for 20 min/
+2,,      taco,, tortilla, meat, cheese,, cook meat, put ingredients into tortilla
