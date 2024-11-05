@@ -232,7 +232,7 @@ public class Main extends Application {
 
     // Clear input fields after adding a recipe
     private void clearInputFields() {
-        searchField.clear();
+        searchField.clear(); // Clear the search field
     }
 
     public static void main(String[] args) {
@@ -240,4 +240,3 @@ public class Main extends Application {
         launch(args);
     }
 }
-
