@@ -1,0 +1,25 @@
+//read CSV file code
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class ReadCSV {
+    public static void main(String[] args) {
+        String filePath = "path/to/your/data.csv";
+        String line = "";
+        String splitBy = ",";
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            while ((line = br.readLine()) != null) {
+                // Split the line by comma
+                String[] data = line.split(splitBy);
+
+                // Process the data (e.g., print to console)
+                System.out.println("Name: " + data[0] + ", Age: " + data[1] + ", City: " + data[2]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
