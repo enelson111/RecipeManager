@@ -1,0 +1,46 @@
+import java.io.BufferedReader;
+import java.io.FileReader; 
+import java.io.IOException;
+import java.util.Scanner;
+public class KeyWordSearch {
+    public static void main(String[] args) {
+    	
+        String keyWord = getKeyWord(); //get recipe name to search
+        getSearch(keyWord);	//output searched recipe
+    }
+    
+    public static void getSearch(String keyWord) {
+        String filePath = "C:\\enter\\file\\path\\here\\recipes.txt";
+        String line = "";
+        boolean found = false;
+        String delimiter = "\t"; //Delimiter that splits columns
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            while ((line = br.readLine()) != null) {
+                // Split the line by comma
+                String[] data = line.split(delimiter);
+
+                // Check if the city matches the target city
+                if (data[1].trim().equalsIgnoreCase(keyWord)) {
+                    // Process the data (e.g., print to console)
+                    System.out.println("recipe for " + data[1] + ".\nIngredients: " + data[2] + "\nSteps: "+ data[3]);
+                    found = true;
+                    
+                }
+            }
+            if(!found) {
+            	System.out.println("Recipe " + keyWord + " not found.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    		
+    }
+    public static String getKeyWord() {
+		Scanner input = new Scanner(System.in);
+		System.out.print("Which recipe would you like to search for ");
+		String keyWord = input.nextLine().toLowerCase();
+		input.close();
+		return keyWord;
+	}
+}
