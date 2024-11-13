@@ -1,0 +1,232 @@
+package application;
+
+import javafx.application.Application;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+
+import java.io.*;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class Main extends Application {
+    private static final String FILE_PATH = "C:\\Users\\Emily\\Desktop\\Logan\\recipes.csv"; // Update with your actual file path
+    private RecipeManager recipeManager = new RecipeManager();
+    private ObservableList<Recipe> recipeList = FXCollections.observableArrayList();
+    private ListView<Recipe> recipeListView = new ListView<>(recipeList);
+    private TextArea recipeDetailsArea = new TextArea();
+    private TextField searchField = new TextField();
+    private ComboBox<String> categoryComboBox = new ComboBox<>();
+
+    public static void main(String[] args) {
+        // Launch the JavaFX application
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Recipe Manager");
+
+        // Load recipes from CSV
+        loadRecipesFromFile();
+
+        // Create layout containers
+        VBox mainLayout = new VBox(10);
+        HBox searchBox = new HBox(10);
+        HBox inputBox = new HBox(10);
+        inputBox.setSpacing(10);
+
+        // Setup Recipe List View
+        recipeListView.setPrefHeight(200);
+        recipeListView.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends Recipe> observable, Recipe oldValue, Recipe newValue) -> {
+            if (newValue != null) {
+                showRecipeDetails(newValue);
+            }
+        });
+
+        // Setup TextArea for displaying recipe details
+        recipeDetailsArea.setEditable(false);
+        recipeDetailsArea.setPrefHeight(200);
+
+        // Search Field and Category ComboBox
+        searchBox.getChildren().addAll(new Label("Search: "), searchField);
+        
+        // Category ComboBox
+        categoryComboBox.setItems(FXCollections.observableArrayList("All", "Breakfast", "Lunch", "Dinner", "Dessert", "Snack"));
+        categoryComboBox.getSelectionModel().selectFirst(); // Default selection "All"
+        
+        Button searchButton = new Button("Search");
+        searchButton.setOnAction(e -> searchRecipe());
+        searchBox.getChildren().addAll(categoryComboBox, searchButton);
+
+        // Input fields for new recipe
+        TextField nameField = new TextField();
+        nameField.setPromptText("Recipe Name");
+        TextField categoryField = new TextField();
+        categoryField.setPromptText("Category (e.g. Breakfast)");
+        TextField ingredientsField = new TextField();
+        ingredientsField.setPromptText("Ingredients (comma separated)");
+        TextArea instructionsArea = new TextArea();
+        instructionsArea.setPromptText("Instructions");
+
+        Button addButton = new Button("Add Recipe");
+        addButton.setOnAction(e -> addRecipe(nameField.getText(), categoryField.getText(), ingredientsField.getText(), instructionsArea.getText()));
+
+        inputBox.getChildren().addAll(nameField, categoryField, ingredientsField, instructionsArea, addButton);
+
+        // Button to list all recipes
+        Button listButton = new Button("List All Recipes");
+        listButton.setOnAction(e -> listRecipes());
+
+        mainLayout.getChildren().addAll(searchBox, recipeListView, recipeDetailsArea, inputBox, listButton);
+
+        Scene scene = new Scene(mainLayout, 600, 600);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private void loadRecipesFromFile() {
+        try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split("\t");
+                if (data.length >= 4) {
+                    List<String> ingredients = Arrays.asList(data[2].split(","));
+                    Recipe recipe = new Recipe(data[1], ingredients, data[3], data[0]);
+                    recipeManager.addRecipe(recipe);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void searchRecipe() {
+        String keyword = searchField.getText();
+        String category = categoryComboBox.getSelectionModel().getSelectedItem();
+
+        List<Recipe> searchResults = recipeManager.searchRecipesByKeywordAndCategory(keyword, category.equals("All") ? "" : category);
+
+        if (searchResults.isEmpty()) {
+            showAlert("No recipes found for the search criteria.");
+        } else {
+            recipeList.setAll(searchResults);
+        }
+    }
+
+    private void addRecipe(String name, String category, String ingredientsText, String instructions) {
+        if (name.isEmpty() || category.isEmpty() || ingredientsText.isEmpty() || instructions.isEmpty()) {
+            showAlert("All fields must be filled out.");
+            return;
+        }
+
+        List<String> ingredients = Arrays.asList(ingredientsText.split(","));
+        Recipe newRecipe = new Recipe(name, ingredients, instructions, category);
+        recipeManager.addRecipe(newRecipe);
+        recipeList.add(newRecipe);
+        appendRecipeToFile(newRecipe);
+        clearInputFields();
+        showAlert("Recipe added successfully!");
+    }
+
+    private void appendRecipeToFile(Recipe recipe) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
+            String ingredients = String.join(",", recipe.getIngredients());
+            String line = recipe.getCategory() + "\t" + recipe.getName() + "\t" + ingredients + "\t" + recipe.getInstructions();
+            bw.write(line);
+            bw.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showRecipeDetails(Recipe recipe) {
+        String details = "Name: " + recipe.getName() + "\nCategory: " + recipe.getCategory() + "\nIngredients: " + String.join(", ", recipe.getIngredients()) + "\n\nInstructions: \n" + recipe.getInstructions();
+        recipeDetailsArea.setText(details);
+    }
+
+    private void listRecipes() {
+        recipeList.clear();
+        recipeList.addAll(recipeManager.getRecipes());
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void clearInputFields() {
+        searchField.clear(); // Clear the search field
+    }
+
+    static class Recipe {
+        private String name;
+        private List<String> ingredients;
+        private String instructions;
+        private String category;
+
+        public Recipe(String name, List<String> ingredients, String instructions, String category) {
+            this.name = name;
+            this.ingredients = ingredients;
+            this.instructions = instructions;
+            this.category = category;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getCategory() {
+            return category;
+        }
+
+        public List<String> getIngredients() {
+            return ingredients;
+        }
+
+        public String getInstructions() {
+            return instructions;
+        }
+
+        @Override
+        public String toString() {
+            return name + " (" + category + ")";
+        }
+
+        public boolean matchesKeyword(String keyword) {
+            return name.toLowerCase().contains(keyword.toLowerCase()) || ingredients.stream()
+                    .anyMatch(ingredient -> ingredient.toLowerCase().contains(keyword.toLowerCase()));
+        }
+
+        public boolean matchesCategory(String category) {
+            return category.isEmpty() || this.category.equalsIgnoreCase(category);
+        }
+    }
+
+    static class RecipeManager {
+        private List<Recipe> recipes;
+
+        public RecipeManager() {
+            recipes = new ArrayList<>();
+        }
+
+        public void addRecipe(Recipe recipe) {
+            recipes.add(recipe);
+        }
+
+        public List<Recipe> getRecipes() {
+            return recipes;
+        }
+
+        public List<Recipe> searchRecipesByKeywordAndCategory(String keyword, String category) {
+            return recipes.stream()
+                    .filter(recipe -> recipe.matchesKeyword(keyword) && recipe.matchesCategory(category))
+                    .collect(Collectors.toList());
+        }
+    }
+}
